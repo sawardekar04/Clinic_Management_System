@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Clinic Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <h2 style="text-align: center; margin-bottom: 30px;">Health Clinic</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('add_patient') }}">Add Patient</a></li>
+            <li><a href="{{ url_for('patients_by_date') }}">Patients by Date</a></li>
+            <li><a href="{{ url_for('search_patients') }}">Search Patients</a></li>
+            {% if current_user.role in ['admin', 'receptionist'] %}
+            <li><a href="{{ url_for('add_doctor') }}">Add Doctor</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-block">
+        <div class="header">
+            <h2>Welcome, {{ current_user.name }} ({{ current_user.role.capitalize() }})</h2>
+            <img src="{{ url_for('static', filename='images/seeker1.png') }}" class="profile-receptionist">
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="cards">
+            <div class="card">
+                <div class="card-title">Total Patients</div>
+                <div class="card-value">{{ patient_count }}</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Total Doctors</div>
+                <div class="card-value">{{ doctor_count }}</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Today's Patients</div>
+                <div class="card-value">{{ patients|selectattr('date', 'equalto', now().date())|list|length }}</div>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <form action="{{ url_for('search_patients') }}" method="get">
+                <input type="text" name="query" placeholder="Search patients by name..." class="search-input">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+        
+        <div class="filter-container">
+            <form action="{{ url_for('patients_by_date') }}" method="get">
+                <label class="filter-label">Filter by Date:</label>
+                <input type="date" name="date" class="filter-date">
+                <button type="submit" class="filter-btn">Filter</button>
+            </form>
+        </div>
+        
+        <h3>Patient List</h3>
+        
+        <div class="patient-list">
+            {% for patient in patients %}
+            <div class="patient-item">
+                <div class="patient-info">
+                    <div class="patient-name">{{ patient.name }}</div>
+                    <div>Age: {{ patient.age }} | Gender: {{ patient.gender }} | Date: {{ patient.date }}</div>
+                    
+                    <div id="details-{{ patient.id }}" class="patient-details">
+                        <p><strong>Phone:</strong> {{ patient.phone }}</p>
+                        <p><strong>Disease:</strong> {{ patient.disease }}</p>
+                        <p><strong>Added by:</strong> {{ patient.creator.name if patient.creator else 'Unknown' }}</p>
+                        <p><strong>Last updated by:</strong> {{ patient.updater.name if patient.updater else 'Unknown' }}</p>
+                    </div>
+                </div>
+                
+                <div class="patient-actions">
+                    <button id="btn-{{ patient.id }}" onclick="toggleDetails('{{ patient.id }}')" class="btn btn-view">View</button>
+                    
+                    {% if current_user.role in ['admin', 'receptionist'] %}
+                    <form action="{{ url_for('update_patient', patient_id=patient.id) }}" method="GET" style="display: inline;">
+                        <button type="submit" class="btn btn-update">Update</button>
+                    </form>
+                    {% endif %}
+                    
+                    <form action="{{ url_for('delete_patient', patient_id=patient.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this patient?');" class="btn btn-delete">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails(id) {
+            var details = document.getElementById('details-' + id);
+            var btn = document.getElementById('btn-' + id);
+            if (details.style.display === 'none' || details.style.display === '') {
+                details.style.display = 'block';
+                btn.innerText = 'Hide';
+            } else {
+                details.style.display = 'none';
+                btn.innerText = 'View';
+            }
+        }
+    </script>
+</body>
+</html>

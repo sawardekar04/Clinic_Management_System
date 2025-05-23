@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient - Clinic Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <h2 style="text-align: center; margin-bottom: 30px;">Health Clinic</h2>
+        <ul>
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('add_patient') }}">Add Patient</a></li>
+            <li><a href="{{ url_for('patients_by_date') }}">Patients by Date</a></li>
+            <li><a href="{{ url_for('search_patients') }}">Search Patients</a></li>
+            {% if current_user.role in ['admin', 'receptionist'] %}
+            <li><a href="{{ url_for('add_doctor') }}">Add Doctor</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-block">
+        <div class="header">
+            <h2>Add New Patient</h2>
+            <img src="{{ url_for('static', filename='images/seeker1.png') }}" class="profile-receptionist">
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="form-container">
+            <h3 class="form-title">Patient Information</h3>
+            
+            <form method="POST" action="{{ url_for('add_patient') }}">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="Patient-Name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="Patient-Age" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    <select name="Gender" class="form-select" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="Patient-Date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="Patient-PhoneNo" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Disease/Condition</label>
+                    <textarea name="Patient-desc" class="form-textarea" required></textarea>
+                </div>
+                
+                <button type="submit" class="form-submit">Add Patient</button>
+                <a href="{{ url_for('dashboard') }}" class="form-cancel">Cancel</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
